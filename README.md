@@ -17,3 +17,7 @@
 
 1. From a PowerShell prompt
     1. `.\Start-UserExport.ps1`
+
+## Start-ScriptFile.ps1
+
+This will file be launched by a scheduled task. Only when there's one or more file(s) at the `$folder` location, `Start-UserExport.ps1` will be launched.
