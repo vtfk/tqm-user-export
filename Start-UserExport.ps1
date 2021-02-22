@@ -39,7 +39,7 @@ Function Get-PhoneNumber {
         $phone = $phone.Substring(4, 8)
     }
 
-    return $phone
+    return "47$phone"
 }
 
 Import-Module Logger
