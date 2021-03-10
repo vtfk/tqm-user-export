@@ -186,7 +186,7 @@ try {
 
                                 # write casetype node
                                 $xml.WriteStartElement("CaseType")
-                                $xml.WriteValue("Observasjon")
+                                $xml.WriteValue("Avvik")
                                 $xml.WriteEndElement()
 
                                 # write severitydegree node
