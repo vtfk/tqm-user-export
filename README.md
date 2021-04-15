@@ -11,6 +11,13 @@
         HostName = "<hostname>"
         Level = "ERROR" # papertrail logging will be activated from this log level and up
     }
+
+    $sftp = @{
+        HostName = "sftp.server.no"
+        UserName = "username"
+        Password = "password"
+        SshHostKeyFingerprint = "ssh-rsa 4096 ssh-fingerprint"
+    }
     ```
 
 ## Usage
