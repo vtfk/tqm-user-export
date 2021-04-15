@@ -42,6 +42,49 @@ Function Get-PhoneNumber {
     return "47$phone"
 }
 
+Function Upload-TQMFile {
+    param(
+        [Parameter(Mandatory = $True)]
+        [ValidateScript({ Test-Path $_ })]
+        [string]$FilePath,
+
+        [Parameter(Mandatory = $True)]
+        [string]$ServerPath
+    )
+
+    # Load WinSCP .NET assembly
+    Add-Type -Path "C:\Program Files (x86)\WinSCP\WinSCPnet.dll"
+
+    # Set up session options
+    $sessionOptions = New-Object WinSCP.SessionOptions -Property @{
+        Protocol = [WinSCP.Protocol]::Sftp
+        HostName = $sftp.HostName
+        UserName = $sftp.UserName
+        Password = $sftp.Password
+        SshHostKeyFingerprint = $sftp.SshHostKeyFingerprint
+    }
+
+    $session = New-Object WinSCP.Session
+
+    try
+    {
+        # Connect
+        $session.Open($sessionOptions)
+
+        # setup transfer options
+        $transferOptions = New-Object WinSCP.TransferOptions
+        $transferOptions.OverwriteMode = [WinSCP.OverwriteMode]::Overwrite
+        $transferOptions.ResumeSupport.State = [WinSCP.TransferResumeSupportState]::Off # don't use .filepart
+
+        $result = $session.PutFiles($FilePath, $ServerPath, $False, $transferOptions)
+        if ($result.Failures -ne "{}") { $result.Failures }
+    }
+    finally
+    {
+        $session.Dispose()
+    }
+}
+
 Import-Module Logger
 if ($papertrailConfig) {
     Add-LogTarget -Name Papertrail -Configuration $papertrailConfig
@@ -51,6 +94,7 @@ if ($papertrailConfig) {
 $xmlFolder = Get-LogDir
 $xmlPath = "$xmlFolder\export_$((Get-Date).DayOfWeek.ToString().ToLower()).xml"
 $logPath = "$xmlFolder\tqm_$((Get-Date).DayOfWeek.ToString().ToLower()).log"
+$sftpPath = "\$(Get-Date -Format 'yyyyMMddHHmmss').xml"
 
 # make sure logpath exists
 if (!(Test-Path -Path $xmlFolder)) {
@@ -220,3 +264,12 @@ catch {
 
 # close xml document
 $xml.Close()
+
+# upload file to TQM
+$uploadResult = Upload-TQMFile -FilePath $xmlPath -ServerPath $sftpPath
+if ($uploadResult) {
+    Write-Log -Message "Failed to upload '$xmlPath' to '$($sftp.HostName)$sftpPath'" -Level ERROR -Body $uploadResult
+}
+else {
+    Write-Log -Message "'$xmlPath' successfully uploaded to '$($sftp.HostName)$sftpPath'"
+}
