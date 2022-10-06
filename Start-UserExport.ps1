@@ -118,7 +118,7 @@ Write-Log -Message "Exporting to '$xmlPath'"
 
 # get ad users to export
 #$users = Get-ADUser -Filter "samaccountname -eq 'joh1904' -or samaccountname -eq 'run0805'" -Properties displayName,samAccountName,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title
-$users = D:\Scripts\VTFK-Toolbox\AD\Get-VTFKADUser.ps1 -Domain login.top.no -Properties displayName,samAccountName,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title -OnlyAutoUsers | Where-Object { $_.Enabled -eq $True } | Sort-Object displayName
+$users = D:\Scripts\VTFK-Toolbox\AD\Get-VTFKADUser.ps1 -Domain login.top.no -Properties displayName,samAccountName,company,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title -OnlyAutoUsers | Where-Object { $_.Enabled -eq $True } | Sort-Object displayName
 Write-Log -Message "Exporting $($users.Count) users"
 
 # create xml document
@@ -209,6 +209,7 @@ try {
 
                             # write defaultol3 node
                             $xml.WriteStartElement("DefaultOL3")
+                            $xml.WriteValue($user.company)
                             $xml.WriteEndElement()
 
                             # write defaultpl node
