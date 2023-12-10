@@ -125,7 +125,7 @@ if ("$($tqmConfig.Firmakode)".Length -eq 0) {
 
 # get ad users to export
 #$users = Get-ADUser -Filter "samaccountname -eq 'joh1904' -or samaccountname -eq 'run0805'" -Properties displayName,samAccountName,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title
-$users = E:\scripts\Toolbox\AD\Get-ADUser.ps1 -Domain login.top.no -Properties displayName,samAccountName,company,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title -OnlyAutoUsers | Where-Object { $_.Enabled -eq $True } | Sort-Object displayName
+$users = E:\scripts\Toolbox\AD\Get-ADUser.ps1 -Domain login.top.no -Properties displayName,userPrincipalName,samAccountName,company,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title -OnlyAutoUsers | Where-Object { $_.Enabled -eq $True } | Sort-Object displayName
 Write-Log -Message "Exporting $($users.Count) users"
 
 # create xml document
@@ -159,10 +159,10 @@ try {
                 ########## export users to nodes here ##########
                 $users | ForEach-Object {
 
-                    # Change 19.01.2023 - skip user and send error to Teams if user is missing mail
+                    # Change 10.12.2023 - skip user and send error to Teams if user is missing userPrincipalName
                     $user = $_
-                    if ("$($user.mail)".Length -eq 0) {
-                        Write-Log -Message "AIAIAI! User '$($user.displayName)' - '$($user.samAccountName)' is missing mail property, will skip! Please add mail info to user." -Level ERROR
+                    if ("$($user.userPrincipalName)".Length -eq 0) {
+                        Write-Log -Message "AIAIAI! User '$($user.displayName)' - '$($user.samAccountName)' is missing userPrincipalName property, will skip! Please add mail info to user." -Level ERROR
                         return
                     }
 
@@ -188,7 +188,7 @@ try {
 
                             # write email node
                             $xml.WriteStartElement("Email")
-                            $xml.WriteValue($user.mail)
+                            $xml.WriteValue($user.userPrincipalName)
                             $xml.WriteEndElement()
 
                             # write phone node
