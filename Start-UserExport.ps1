@@ -86,12 +86,14 @@ Function Upload-TQMFile {
 }
 
 Import-Module Logger
+
 if ($papertrailConfig) {
     Add-LogTarget -Name Papertrail -Configuration $papertrailConfig
 }
+Add-LogTarget -Name Teams -Configuration @{ WebHook = $tqmConfig.TeamsWebhook; Level = "ERROR" }
 
 # file paths
-$xmlFolder = Get-LogDir
+$xmlFolder = "."
 $xmlPath = "$xmlFolder\export_$((Get-Date).DayOfWeek.ToString().ToLower()).xml"
 $logPath = "$xmlFolder\tqm_$((Get-Date).DayOfWeek.ToString().ToLower()).log"
 $sftpPath = "\$(Get-Date -Format 'yyyyMMddHHmmss').xml"
@@ -116,9 +118,14 @@ if ((Test-Path -Path $logPath) -and ((Get-Date)-(Get-ChildItem -Path $logPath | 
 Add-LogTarget -Name CMTrace -Configuration @{ Path = $logPath }
 Write-Log -Message "Exporting to '$xmlPath'"
 
+if ("$($tqmConfig.Firmakode)".Length -eq 0) {
+    Write-Log -Message "AIAIAI! Har du glemt å sette firmakode i tqmConfig?" -Level ERROR
+    Exit
+}
+
 # get ad users to export
 #$users = Get-ADUser -Filter "samaccountname -eq 'joh1904' -or samaccountname -eq 'run0805'" -Properties displayName,samAccountName,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title
-$users = D:\Scripts\VTFK-Toolbox\AD\Get-VTFKADUser.ps1 -Domain login.top.no -Properties displayName,samAccountName,company,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title -OnlyAutoUsers | Where-Object { $_.Enabled -eq $True } | Sort-Object displayName
+$users = E:\scripts\Toolbox\AD\Get-ADUser.ps1 -Domain login.top.no -Properties displayName,samAccountName,company,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title -OnlyAutoUsers | Where-Object { $_.Enabled -eq $True } | Sort-Object displayName
 Write-Log -Message "Exporting $($users.Count) users"
 
 # create xml document
@@ -143,7 +150,7 @@ try {
 
             # write ol1_key node
             $xml.WriteStartElement("OL1_Key")
-            $xml.WriteValue("tfk")
+            $xml.WriteValue($tqmConfig.Firmakode)
             $xml.WriteEndElement()
 
             # write userinfo node
@@ -151,12 +158,19 @@ try {
 
                 ########## export users to nodes here ##########
                 $users | ForEach-Object {
+
+                    # Change 19.01.2023 - skip user and send error to Teams if user is missing mail
+                    $user = $_
+                    if ("$($user.mail)".Length -eq 0) {
+                        Write-Log -Message "AIAIAI! User '$($user.displayName)' - '$($user.samAccountName)' is missing mail property, will skip! Please add mail info to user." -Level ERROR
+                        return
+                    }
+
                     # create user node
                     $xml.WriteStartElement("User")
 
-                        $user = $_
                         try {
-                            Write-Log -Message "Adding user '$($user.mail)'"
+                            Write-Log -Message "Adding user '$($user.mail)' - '$($user.displayName)' - '$($user.samAccountName)'"
 
                             # write name node
                             $xml.WriteStartElement("Name")
@@ -207,6 +221,7 @@ try {
                             $xml.WriteValue($False)
                             $xml.WriteEndElement()
 
+                            <# 
                             # write defaultol3 node
                             $xml.WriteStartElement("DefaultOL3")
                             $xml.WriteValue($user.company)
@@ -216,6 +231,7 @@ try {
                             $xml.WriteStartElement("DefaultPL")
                             $xml.WriteValue($user.department)
                             $xml.WriteEndElement()
+                            
 
                             # write caseregsetting node
                             $xml.WriteStartElement("CaseRegSetting")
@@ -240,9 +256,11 @@ try {
 
                             # close caseregsetting node
                             $xml.WriteEndElement()
+                            #>
                         }
                         catch {
-                            Write-Log -Message "Failed : $_" -Level ERROR -Exception $_
+                            Write-Log -Message "Failed on user '$($user.mail)' - '$($user.displayName)' - '$($user.samAccountName)': $_" -Level ERROR -Exception $_
+                            # Consider to close xmlElement here - if we need the script to continue on error
                         }
                 
                     # close user node
