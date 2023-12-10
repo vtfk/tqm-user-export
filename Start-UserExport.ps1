@@ -93,7 +93,7 @@ if ($papertrailConfig) {
 Add-LogTarget -Name Teams -Configuration @{ WebHook = $tqmConfig.TeamsWebhook; Level = "ERROR" }
 
 # file paths
-$xmlFolder = "."
+$xmlFolder = ".\logs"
 $xmlPath = "$xmlFolder\export_$((Get-Date).DayOfWeek.ToString().ToLower()).xml"
 $logPath = "$xmlFolder\tqm_$((Get-Date).DayOfWeek.ToString().ToLower()).log"
 $sftpPath = "\$(Get-Date -Format 'yyyyMMddHHmmss').xml"
