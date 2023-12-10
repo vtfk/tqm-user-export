@@ -96,7 +96,7 @@ Add-LogTarget -Name Teams -Configuration @{ WebHook = $tqmConfig.TeamsWebhook; L
 $xmlFolder = ".\logs"
 $xmlPath = "$xmlFolder\export_$((Get-Date).DayOfWeek.ToString().ToLower()).xml"
 $logPath = "$xmlFolder\tqm_$((Get-Date).DayOfWeek.ToString().ToLower()).log"
-$sftpPath = "\$(Get-Date -Format 'yyyyMMddHHmmss').xml"
+$sftpPath = "\$($tqmConfig.Firmakode)-$(Get-Date -Format 'yyyyMMddHHmmss').xml"
 
 # make sure logpath exists
 if (!(Test-Path -Path $xmlFolder)) {
