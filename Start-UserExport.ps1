@@ -179,7 +179,7 @@ try {
 
                             # write login node
                             $xml.WriteStartElement("Login")
-                            $xml.WriteValue($user.samAccountName)
+                            $xml.WriteValue($user.userPrincipalName)
                             $xml.WriteEndElement()
 
                             # write employeeNumber node
