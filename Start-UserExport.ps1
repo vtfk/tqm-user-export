@@ -77,7 +77,11 @@ Function Upload-TQMFile {
         $transferOptions.ResumeSupport.State = [WinSCP.TransferResumeSupportState]::Off # don't use .filepart
 
         $result = $session.PutFiles($FilePath, $ServerPath, $False, $transferOptions)
-        if ($result.Failures -ne "{}") { $result.Failures }
+        if ($result.Failures -ne "{}") { return $result.Failures }
+    }
+    catch {
+        Write-Log -Message "AIAIAI! Upload feila. Error: $_" -Level WARN
+        return "AIAIAI! Upload feila. Sjekk logg på serveren"
     }
     finally
     {
