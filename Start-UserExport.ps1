@@ -225,10 +225,13 @@ try {
                             $xml.WriteValue($False)
                             $xml.WriteEndElement()
 
-                            <# 
                             # write defaultol3 node
                             $xml.WriteStartElement("DefaultOL3")
-                            $xml.WriteValue($user.company)
+                            if ($tqmConfig.DefaultOL3) {
+                                $xml.WriteValue($tqmConfig.DefaultOL3)
+                            } else {
+                                $xml.WriteValue($user.company)
+                            }
                             $xml.WriteEndElement()
 
                             # write defaultpl node
@@ -236,7 +239,7 @@ try {
                             $xml.WriteValue($user.department)
                             $xml.WriteEndElement()
                             
-
+                            <# 
                             # write caseregsetting node
                             $xml.WriteStartElement("CaseRegSetting")
 
