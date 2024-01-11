@@ -230,13 +230,21 @@ try {
                             if ($tqmConfig.DefaultOL3) {
                                 $xml.WriteValue($tqmConfig.DefaultOL3)
                             } else {
-                                $xml.WriteValue($user.company)
+                                if ($user.company) {    
+                                    $xml.WriteValue($user.company)
+                                } else {
+                                    $xml.WriteValue("BLANK")
+                                }
                             }
                             $xml.WriteEndElement()
 
                             # write defaultpl node
                             $xml.WriteStartElement("DefaultPL")
-                            $xml.WriteValue($user.department)
+                            if ($user.department) {    
+                                $xml.WriteValue($user.department)
+                            } else {
+                                $xml.WriteValue("BLANK")
+                            }
                             $xml.WriteEndElement()
                             
                             <# 
