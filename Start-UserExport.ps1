@@ -202,6 +202,7 @@ try {
                     # Ok - here we should have what we need 
                     [void]$userStrukturLinje.remove("Vestfold fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
                     [void]$userStrukturLinje.remove("Telemark fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
+                    [void]$userStrukturLinje.remove("Telemark Fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
                     $userStrukturLinje = ($userStrukturLinje) -join " / " # And as a string separated by forward slash..
 
                     # create user node
