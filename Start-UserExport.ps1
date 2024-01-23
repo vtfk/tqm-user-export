@@ -193,7 +193,7 @@ try {
                         return
                     }
                     if ($userStrukturLinje.Count -eq 0) {
-                        if ("Fhus Tønsberg", "T18", "Fylkessenter Seljord", "Vinje tannklinikk", "UT-Tann", "Team konserndrift" -NotContains $user.department) { # Gidder ikke varlse om testbrukere
+                        if ("Fhus Tønsberg", "T18", "Fylkessenter Seljord", "Vinje tannklinikk", "UT-Tann", "Team konserndrift", "DATA", "ORG-DIGI", "Service" -NotContains $user.department) { # Gidder ikke varlse om testbrukere
                             Write-Log -Message "AIAIAI! Department '$($user.department)' does not exist in FINT, will skip! User: '$($user.displayName)' - '$($user.samAccountName)'. Please add an existing FINT department to user if you want him/her/they/them/whatever in TQM." -Level ERROR
                         }
                         return
