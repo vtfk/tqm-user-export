@@ -132,6 +132,14 @@ if ("$($tqmConfig.Firmakode)".Length -eq 0) {
 $users = E:\scripts\Toolbox\AD\Get-ADUser.ps1 -Domain login.top.no -Properties displayName,userPrincipalName,samAccountName,company,mail,mobile,MobilePhone,HomePhone,OfficePhone,telephoneNumber,msRTCSIP-Line,department,title -OnlyAutoUsers | Where-Object { $_.Enabled -eq $True } | Sort-Object displayName
 Write-Log -Message "Exporting $($users.Count) users"
 
+# Get org units hashtable (key is department/unit name)
+$units = E:\scripts\Toolbox\FINT\Get-OrgUnits.ps1
+Write-Log -Message "Got $($units.Count) org units from FINT"
+# reverse unit strukturlinje for all units (we don't)
+Foreach ($unit in $units.GetEnumerator()) {
+    $unit.Value.strukturLinje.Reverse()
+}
+
 # create xml document
 $xmlSettings = New-Object System.Xml.XmlWriterSettings
 $xmlSettings.Indent = $true
@@ -169,6 +177,31 @@ try {
                         Write-Log -Message "AIAIAI! User '$($user.displayName)' - '$($user.samAccountName)' is missing userPrincipalName property, will skip! Please add mail info to user." -Level ERROR
                         return
                     }
+                    if ("$($user.department)".Length -eq 0) {
+                        if ("jorgen.best" -NotContains $user.samAccountName) { # Gidder ikke varlse om testbrukere
+                            Write-Log -Message "AIAIAI! User '$($user.displayName)' - '$($user.samAccountName)' is missing department property, will skip! Please add department info to user." -Level ERROR
+                        }
+                        return
+                    }
+                    if ("$($user.department)" -eq "Folkevalgte") { # Folkevalgte trenger visst itj bruker
+                        return
+                    }
+                    try {
+                        $userStrukturLinje = $units[$user.department].strukturLinje
+                    } catch {
+                        Write-Log -Message "AIAIAI - den catcha! Department '$($user.department)' does not exist in FINT, will skip! User: '$($user.displayName)' - '$($user.samAccountName)'. Please add an existing FINT department to user if you want him/her/they/them/whatever in TQM." -Level ERROR
+                        return
+                    }
+                    if ($userStrukturLinje.Count -eq 0) {
+                        if ("Fhus Tønsberg", "T18", "Fylkessenter Seljord", "Vinje tannklinikk", "UT-Tann", "Team konserndrift" -NotContains $user.department) { # Gidder ikke varlse om testbrukere
+                            Write-Log -Message "AIAIAI! Department '$($user.department)' does not exist in FINT, will skip! User: '$($user.displayName)' - '$($user.samAccountName)'. Please add an existing FINT department to user if you want him/her/they/them/whatever in TQM." -Level ERROR
+                        }
+                        return
+                    }
+
+                    # Ok - here we should have what we need 
+                    [void]$userStrukturLinje.remove("Vestfold fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
+                    $userStrukturLinje = ($userStrukturLinje) -join " / " # And as a string separated by forward slash..
 
                     # create user node
                     $xml.WriteStartElement("User")
@@ -240,8 +273,8 @@ try {
 
                             # write defaultpl node
                             $xml.WriteStartElement("DefaultPL")
-                            if ($user.department) {    
-                                $xml.WriteValue($user.department)
+                            if ($userStrukturLinje) {    
+                                $xml.WriteValue($userStrukturLinje)
                             } else {
                                 $xml.WriteValue("BLANK")
                             }
