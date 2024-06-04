@@ -266,6 +266,12 @@ try {
                                 if ($tqmConfig.DefaultOL3 -ne "NONE") {
                                     $xml.WriteValue($tqmConfig.DefaultOL3)
                                 }
+                            } elseif ($tqmConfig.AdCompanyAsOL3) {
+                                if ($user.company) {    
+                                    $xml.WriteValue($user.company)
+                                } else {
+                                    $xml.WriteValue("BLANK")
+                                }
                             } else {
                                 if ($user.company) {    
                                     $xml.WriteValue($user.company)
@@ -277,11 +283,9 @@ try {
 
                             # write defaultpl node
                             $xml.WriteStartElement("DefaultPL")
-                            if ($tqmConfig.AdCompanyAsPL) {
-                                if ($user.company) {    
-                                    $xml.WriteValue($user.company)
-                                } else {
-                                    $xml.WriteValue("BLANK")
+                            if ($tqmConfig.DefaultPL) {
+                                if ($tqmConfig.DefaultPL -ne "NONE") {
+                                    $xml.WriteValue($tqmConfig.DefaultPL)
                                 }
                             } else {
                                 if ($userStrukturLinje) {    
