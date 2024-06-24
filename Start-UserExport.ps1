@@ -136,6 +136,10 @@ Write-Log -Message "Exporting $($users.Count) users"
 $units = E:\scripts\Toolbox\FINT\Get-OrgUnits.ps1
 Write-Log -Message "Got $($units.Count) org units from FINT"
 # reverse unit strukturlinje for all units (we don't)
+if ($units.Count -eq 0) {
+    Write-Log -Message "AIAIAI! Tryna når vi henta org-units fra FINT" -Level ERROR
+    Exit
+}
 Foreach ($unit in $units.GetEnumerator()) {
     $unit.Value.strukturLinje.Reverse()
 }
