@@ -142,6 +142,9 @@ if ($units.Count -eq 0) {
 }
 Foreach ($unit in $units.GetEnumerator()) {
     $unit.Value.strukturLinje.Reverse()
+    [void]$unit.Value.strukturLinje.remove("Vestfold fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
+    [void]$unit.Value.strukturLinje.remove("Telemark fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
+    [void]$unit.Value.strukturLinje.remove("Telemark Fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
 }
 
 # create xml document
@@ -202,11 +205,19 @@ try {
                         }
                         return
                     }
-
+                    $fintOL3 = $null # Fylkesdirektør / Sektor / Seksjon / Team
+                    if ($userStrukturLinje.Count -gt 1) {
+                        $fintOL3 = $userStrukturLinje[1]
+                        Write-Log $fintOL3
+                    } else {
+                        $fintOL3 = $userStrukturLinje[0]
+                        Write-Log "SE HER $($fintOL3)"
+                    }   
+                    if ($userStrukturLinje.Count -gt 2) {
+                        $userStrukturLinje = @( $userStrukturLinje | Select-Object -Skip 2 )
+                    }
+                    
                     # Ok - here we should have what we need 
-                    [void]$userStrukturLinje.remove("Vestfold fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
-                    [void]$userStrukturLinje.remove("Telemark fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
-                    [void]$userStrukturLinje.remove("Telemark Fylkeskommune") # TQM don't want top level - da får vi skreddersy... (husk at strukturLinje blir reversert oppe der vi henter units)
                     $userStrukturLinje = ($userStrukturLinje) -join " / " # And as a string separated by forward slash..
 
                     # create user node
@@ -266,10 +277,14 @@ try {
 
                             # write defaultol3 node
                             $xml.WriteStartElement("DefaultOL3")
-                            if ($user.company) {
-                                $xml.WriteValue($user.company) # Set Company from AD
+                            if ($fintOL3) {
+                                $xml.WriteValue($fintOL3)
                             } else {
-                                $xml.WriteValue("BLANK")
+                                if ($user.company) {
+                                    $xml.WriteValue($user.company) # Set Company from AD
+                                } else {
+                                    $xml.WriteValue("BLANK")
+                                }
                             }
                             $xml.WriteEndElement()
 
