@@ -216,7 +216,9 @@ try {
                     if ($userStrukturLinje.Count -gt 2) {
                         $userStrukturLinje = @( $userStrukturLinje | Select-Object -Skip 2 )
                     }
-                    
+                    # SPECIAL RULE for vestfold - need to check first element, if is school
+                    $firstStrukturElement = $userStrukturLinje[0]
+
                     # Ok - here we should have what we need 
                     $userStrukturLinje = ($userStrukturLinje) -join " / " # And as a string separated by forward slash..
 
@@ -291,8 +293,8 @@ try {
                             # write defaultpl node
                             $xml.WriteStartElement("DefaultPL")
                             # VFK special rules for school - if ends with "videregående skole" or is equal to "kompetansebyggeren" (and probably more in the future), set value to "“Videregående opplæring/{user.company}”"
-                            if ($user.company.EndsWith("videregående skole") -or $user.company -eq "Kompetansebyggeren") {
-                                $xml.WriteValue("Videregående opplæring / $($user.company)")
+                            if ($firstStrukturElement.EndsWith("videregående skole") -or $firstStrukturElement -eq "Kompetansebyggeren") {
+                                $xml.WriteValue("Videregående opplæring / $($userStrukturLinje)") # Fra skolenivået skolens navn
                             } else {
                                 if ($userStrukturLinje) { 
                                     $xml.WriteValue($userStrukturLinje)
