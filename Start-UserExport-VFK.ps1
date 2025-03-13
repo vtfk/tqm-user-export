@@ -194,7 +194,13 @@ try {
                         return
                     }
                     try {
-                        $userStrukturLinje = $units[$user.department].strukturLinje
+                        if ($user.department -eq "Skolen for sosiale og medisinske institusjoner - avd. for vid...") {
+                            $userStrukturLinje = $units["Skolen for sosiale og medisinske institusjoner - avd. for videregående skole"].strukturLinje
+                        } elseif ($user.department -eq "Skolen for sosiale og medisinske institusjoner - avd. for adm...") {
+                            $userStrukturLinje = $units["Skolen for sosiale og medisinske institusjoner - avd. for administrasjon og drift"].strukturLinje
+                        } else {
+                            $userStrukturLinje = $units[$user.department].strukturLinje
+                        }
                     } catch {
                         Write-Log -Message "AIAIAI - den catcha! Department '$($user.department)' does not exist in FINT, will skip! User: '$($user.displayName)' - '$($user.samAccountName)'. Please add an existing FINT department to user if you want him/her/they/them/whatever in TQM." -Level ERROR
                         return
