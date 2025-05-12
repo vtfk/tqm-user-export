@@ -282,7 +282,16 @@ try {
                             $xml.WriteStartElement("SMSUser")
                             $xml.WriteValue($False)
                             $xml.WriteEndElement()
-
+                            
+                            # write defaultol3 node
+                            $xml.WriteStartElement("DefaultOL3")
+                            if ($userStrukturLinje) { 
+                                $xml.WriteValue($firstStrukturElement)
+                            } else {
+                                $xml.WriteValue("BLANK")
+                            }
+                            $xml.WriteEndElement()
+<#
                             # write defaultol3 node
                             $xml.WriteStartElement("DefaultOL3")
                             if ($fintOL3) {
@@ -309,7 +318,7 @@ try {
                                 }
                             }
                             $xml.WriteEndElement()
-                            
+    #>                        
                             <# 
                             # write caseregsetting node
                             $xml.WriteStartElement("CaseRegSetting")
