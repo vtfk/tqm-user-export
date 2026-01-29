@@ -187,7 +187,9 @@ try {
                         }
                         return
                     }
-                    if ("$($user.department)" -eq "Folkevalgte") { # Folkevalgte trenger visst itj bruker
+                    # Array of departments that should be skipped
+                    $skipDepartments = @("Folkevalgte", "Folkevalgt", "Eksamensvakt", "Pensjonistvilkår", "Sensor", "Uspesifisert", "Ung arbeidstaker mellom 16 - 18 år", "Student")
+                    if ($skipDepartments -contains "$($user.department)") {
                         return
                     }
                     try {
