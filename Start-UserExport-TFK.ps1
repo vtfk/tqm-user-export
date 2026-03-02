@@ -188,7 +188,7 @@ try {
                         return
                     }
                     # Array of departments that should be skipped
-                    $skipDepartments = @("Folkevalgte", "Folkevalgt", "Eksamensvakt", "Pensjonistvilkår", "Sensor", "Uspesifisert", "Ung arbeidstaker mellom 16 - 18 år", "Student")
+                    $skipDepartments = @("Folkevalgte", "Folkevalgt", "Eksamensvakt", "Pensjonistvilkår", "Sensor", "Uspesifisert", "Ung arbeidstaker mellom 16 - 18 år", "Student", "Fagskolen Vestfold og Telemark")
                     if ($skipDepartments -contains "$($user.department)") {
                         return
                     }
