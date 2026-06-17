@@ -80,7 +80,7 @@ Function Upload-TQMFile {
         if ($result.Failures -ne "{}") { return $result.Failures }
     }
     catch {
-        Write-Log -Message "AIAIAI! Upload feila. Error: $_" -Level WARN
+        Write-Log -Message "AIAIAI! Upload feila. Error: $_" -Level WARNING
         return "AIAIAI! Upload feila. Sjekk logg på serveren"
     }
     finally
@@ -98,26 +98,19 @@ Add-LogTarget -Name Teams -Configuration @{ WebHook = $tqmConfig.TeamsWebhook; L
 
 # file paths
 $xmlFolder = "$PSScriptRoot\logs"
-$xmlPath = "$xmlFolder\export_$((Get-Date).DayOfWeek.ToString().ToLower()).xml"
-$logPath = "$xmlFolder\tqm_$((Get-Date).DayOfWeek.ToString().ToLower()).log"
-$sftpPath = "\$($tqmConfig.Firmakode)-$(Get-Date -Format 'yyyyMMddHHmmss').xml"
+$timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+$xmlPath = "$xmlFolder\export_$timestamp.xml"
+$logPath = "$xmlFolder\tqm_$timestamp.log"
+$sftpPath = "\$($tqmConfig.Firmakode)-$timestamp.xml"
 
 # make sure logpath exists
 if (!(Test-Path -Path $xmlFolder)) {
     New-Item -Path $xmlFolder -ItemType Directory -Force -Confirm:$False | Out-Null
 }
 
-# remove last weeks xml file
-if ((Test-Path -Path $xmlPath) -and ((Get-Date)-(Get-ChildItem -Path $xmlPath | Select-Object -ExpandProperty LastWriteTime)).Days -gt 0)
-{
-    try { Remove-Item -Path $xmlPath -Force -Confirm:$False -ErrorAction Stop } catch { }
-}
-
-# remove last weeks log file
-if ((Test-Path -Path $logPath) -and ((Get-Date)-(Get-ChildItem -Path $logPath | Select-Object -ExpandProperty LastWriteTime)).Days -gt 0)
-{
-    try { Remove-Item -Path $logPath -Force -Confirm:$False -ErrorAction Stop } catch { }
-}
+# remove xml and log files older than 7 days
+Get-ChildItem -Path "$xmlFolder\export_*.xml" -ErrorAction SilentlyContinue | Where-Object { ((Get-Date) - $_.LastWriteTime).Days -gt 7 } | ForEach-Object { try { Remove-Item $_.FullName -Force -Confirm:$False -ErrorAction Stop } catch {} }
+Get-ChildItem -Path "$xmlFolder\tqm_*.log" -ErrorAction SilentlyContinue | Where-Object { ((Get-Date) - $_.LastWriteTime).Days -gt 7 } | ForEach-Object { try { Remove-Item $_.FullName -Force -Confirm:$False -ErrorAction Stop } catch {} }
 
 Add-LogTarget -Name CMTrace -Configuration @{ Path = $logPath }
 Write-Log -Message "Exporting to '$xmlPath'"
